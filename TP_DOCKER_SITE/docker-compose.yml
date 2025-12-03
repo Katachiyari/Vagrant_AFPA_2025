@@ -1,44 +1,44 @@
-services:
-  web:
-    build: ./web
-    ports:
-      - "80:80"
-    volumes:
-      - ./web/html:/var/www/html
-    environment:
+services: # Début de la définition des services (conteneurs)
+  web: # Définition du service "web" (notre serveur Apache/PHP)
+    build: ./web # Construit l'image à partir du Dockerfile situé dans le dossier ./web
+    ports: # Mappage des ports entre l'hôte et le conteneur
+      - "80:80" # Mappe le port 80 de la VM (hôte) vers le port 80 du conteneur
+    volumes: # Montage de volumes pour la persistance et le développement
+      - ./web/html:/var/www/html # Synchronise le dossier local ./web/html avec la racine web du conteneur
+    environment: # Définition des variables d'environnement injectées dans le conteneur
       # On passe les variables au conteneur PHP pour db_connect.php
-      - DB_HOST=db
-      - DB_NAME=${MYSQL_DATABASE}
-      - DB_USER=${MYSQL_USER}
-      - DB_PASS=${MYSQL_PASSWORD}
-    depends_on:
-      db:
-        condition: service_healthy # Attend que la BDD soit VRAIMENT prête
-    networks:
-      - app-network
+      - DB_HOST=db # Nom d'hôte de la base de données (nom du service docker)
+      - DB_NAME=${MYSQL_DATABASE} # Nom de la base, récupéré depuis le fichier .env
+      - DB_USER=${MYSQL_USER} # Utilisateur de la base, récupéré depuis le fichier .env
+      - DB_PASS=${MYSQL_PASSWORD} # Mot de passe de l'utilisateur, récupéré depuis le fichier .env
+    depends_on: # Définit les dépendances de démarrage
+      db: # Le service web dépend du service db
+        condition: service_healthy # Attend que le healthcheck de la BDD soit OK avant de lancer web
+    networks: # Réseaux auxquels le service est connecté
+      - app-network # Connecte le service au réseau "app-network"
 
-  db:
-    image: mariadb:10.11
-    restart: unless-stopped # Redémarre sauf si on l'arrête manuellement
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-    volumes:
-      - db_data:/var/lib/mysql
-      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
-    healthcheck: # Vérifie toutes les 10s si mysql répond
-      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - app-network
+  db: # Définition du service "db" (notre base de données MariaDB)
+    image: mariadb:10.11 # Utilise l'image officielle MariaDB version 10.11
+    restart: unless-stopped # Redémarre automatiquement le conteneur sauf s'il est arrêté manuellement
+    environment: # Variables d'environnement pour configurer MariaDB au premier lancement
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD} # Mot de passe root, depuis .env
+      MYSQL_DATABASE: ${MYSQL_DATABASE} # Crée cette base de données au démarrage, depuis .env
+      MYSQL_USER: ${MYSQL_USER} # Crée cet utilisateur, depuis .env
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD} # Mot de passe de l'utilisateur, depuis .env
+    volumes: # Volumes pour la persistance des données
+      - db_data:/var/lib/mysql # Persiste les données de la BDD dans un volume nommé "db_data"
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql # Exécute ce script SQL au premier démarrage pour initialiser la BDD
+    healthcheck: # Configuration de la vérification de santé du service
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"] # Commande interne pour vérifier si MariaDB est prêt
+      interval: 10s # Vérifie toutes les 10 secondes
+      timeout: 5s # Échoue si la vérification prend plus de 5 secondes
+      retries: 5 # Considère le service "unhealthy" après 5 échecs consécutifs
+    networks: # Réseaux
+      - app-network # Connecte le service au même réseau que web
 
-volumes:
-  db_data:
+volumes: # Définition des volumes nommés
+  db_data: # Déclare le volume db_data pour qu'il soit géré par Docker
 
-networks:
-  app-network:
-    driver: bridge
+networks: # Définition des réseaux personnalisés
+  app-network: # Nom du réseau
+    driver: bridge # Utilise le pilote "bridge" (standard pour la communication entre conteneurs sur le même hôte)
