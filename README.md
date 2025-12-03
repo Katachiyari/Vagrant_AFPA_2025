@@ -230,3 +230,34 @@ Project: `tp-vagrant-web-db` with two VMs:
 > Test every VM from the host as described to ensure correct deployment.
 
 ---
+
+## Project 4 – Dockerized LAMP Stack
+
+### Specifications
+
+Project: `TP_DOCKER_SITE`
+
+- **Box**: `ubuntu/jammy64`
+- **Configuration**:
+    - **VM Name**: `Docker-Dev-Host`
+    - **RAM**: `2048 MB`
+    - **CPU**: `2`
+    - **Private Network IP**: `192.168.56.10`
+    - **Port Forwarding**: Host `8080` → VM `80`
+
+**The VM must:**
+
+- Install Docker & Docker Compose automatically
+- Launch the LAMP stack containers on startup (`docker compose up -d`)
+- Expose the web application on port `8080`
+
+#### Deliverables
+
+- Directory: `TP_DOCKER_SITE`
+    - `Vagrantfile`
+    - `docker-compose.yml`
+    - `install_docker.sh`
+    - Source code (`web/`, `db/`)
+
+---
+

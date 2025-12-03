@@ -14,7 +14,7 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get update -q
 apt-get install -y -q ca-certificates curl gnupg lsb-release
 
-# Clé GPG et Repo (Méthode simplifiée et robuste)
+# Clé GPG et Repo
 mkdir -p /etc/apt/keyrings
 if [ ! -f /etc/apt/keyrings/docker.gpg ]; then
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
